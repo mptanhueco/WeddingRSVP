@@ -931,6 +931,15 @@ body.invitation-locked{
   box-shadow:0 0 0 3px rgba(103,27,52,.09);
 }
 
+.guest-names-list{display:flex;flex-direction:column;gap:10px;}
+.guest-name-row{display:grid;grid-template-columns:28px 1fr 34px;align-items:center;gap:8px;}
+.guest-name-row:first-child{grid-template-columns:28px 1fr;}
+.guest-name-icon{display:flex;align-items:center;justify-content:center;color:#68142c;font-size:1rem;}
+.remove-guest-name-btn{width:34px;height:34px;border:1px solid rgba(103,42,66,.28);border-radius:9px;background:#fff8f5;color:#68142c;cursor:pointer;font-size:1rem;line-height:1;transition:.2s ease;}
+.remove-guest-name-btn:hover{background:#68142c;color:#fff;}
+.add-guest-name-btn{width:100%;margin-top:11px;padding:11px 14px;border:1px dashed rgba(103,42,66,.45);border-radius:12px;background:rgba(255,250,248,.65);color:#68142c;font-family:'Jost',sans-serif;font-size:.74rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.2s ease;}
+.add-guest-name-btn:hover{background:#fffaf8;border-color:#68142c;}
+
 .confirmation-submit{
   width:100%;
   margin-top:22px;
@@ -1169,6 +1178,12 @@ body.invitation-locked{
   .choice-sub{font-size:.54rem;margin-top:2px;}
   .overlay-field label{font-size:.61rem;margin-bottom:4px;letter-spacing:.10em;}
   .overlay-field input{padding:9px 10px;border-radius:9px;font-size:.86rem;}
+  .guest-names-list{gap:6px;}
+  .guest-name-row{grid-template-columns:22px 1fr 30px;gap:5px;}
+  .guest-name-row:first-child{grid-template-columns:22px 1fr;}
+  .guest-name-icon{font-size:.82rem;}
+  .remove-guest-name-btn{width:30px;height:30px;border-radius:8px;font-size:.88rem;}
+  .add-guest-name-btn{margin-top:7px;padding:8px 10px;border-radius:9px;font-size:.60rem;}
   .confirmation-submit{margin-top:10px;padding:10px 16px;font-size:.68rem;}
   .overlay-form-note{font-size:.61rem;margin-top:7px;}
   .overlay-rsvp-success{margin-top:10px;padding:14px;border-radius:14px;}
@@ -1267,15 +1282,19 @@ body.invitation-locked{
         </button>
       </div>
 
-      <div class="overlay-field">
-        <label for="overlayGuestName">Full Name / Name(s) Attending</label>
-        <input
-          type="text"
-          id="overlayGuestName"
-          name="overlayGuestName"
-          autocomplete="name"
-          placeholder="Example: Juan Dela Cruz, Maria Dela Cruz"
-          required>
+      <div class="overlay-field guest-names-field">
+        <label>Name(s) Attending</label>
+
+        <div id="guestNamesList" class="guest-names-list">
+          <div class="guest-name-row">
+            <span class="guest-name-icon" aria-hidden="true">♡</span>
+            <input type="text" class="guest-name-input" autocomplete="name" placeholder="Full name" required>
+          </div>
+        </div>
+
+        <button type="button" id="addGuestNameBtn" class="add-guest-name-btn">
+          <span aria-hidden="true">＋</span> Add another name
+        </button>
       </div>
 
       <button type="submit" id="overlayRsvpSubmit" class="confirmation-submit">
@@ -1283,7 +1302,7 @@ body.invitation-locked{
       </button>
 
       <p class="overlay-form-note">
-        Reply format: YES — Name/s attending or NO — Unable to attend.
+        Each name will be saved as a separate RSVP response using the attendance choice above.
       </p>
     </form>
 
@@ -1991,134 +2010,69 @@ let rsvpCompleted = false;
 
 const overlayChoices = document.querySelectorAll('.overlay-choice');
 const overlayForm = document.getElementById('overlayRsvpForm');
-const overlayName = document.getElementById('overlayGuestName');
+const guestNamesList = document.getElementById('guestNamesList');
+const addGuestNameBtn = document.getElementById('addGuestNameBtn');
 const overlaySuccess = document.getElementById('overlayRsvpSuccess');
 const overlaySuccessMsg = document.getElementById('overlayRsvpSuccessMsg');
 const overlayRsvpSubmit = document.getElementById('overlayRsvpSubmit');
-const overlayOpenInvitationBtn = document.getElementById('openInvitationBtn');
 const formReminderPopup = document.getElementById('formReminderPopup');
 const formReminderClose = document.getElementById('formReminderClose');
 
-function getSavedRsvp(){
-  try {
-    return JSON.parse(localStorage.getItem(RSVP_STORAGE_KEY) || 'null');
-  } catch (err) {
-    return null;
-  }
-}
+function getSavedRsvp(){try{return JSON.parse(localStorage.getItem(RSVP_STORAGE_KEY)||'null');}catch(err){return null;}}
+function saveRsvpLocally(data){try{localStorage.setItem(RSVP_STORAGE_KEY,JSON.stringify(data));}catch(err){console.warn('Could not save RSVP status locally:',err);}}
+function showFormReminder(){if(!formReminderPopup)return;formReminderPopup.classList.add('show');formReminderPopup.setAttribute('aria-hidden','false');formReminderClose?.focus();}
+function hideFormReminder(){if(!formReminderPopup)return;formReminderPopup.classList.remove('show');formReminderPopup.setAttribute('aria-hidden','true');}
 
-function saveRsvpLocally(data){
-  try {
-    localStorage.setItem(RSVP_STORAGE_KEY, JSON.stringify(data));
-  } catch (err) {
-    console.warn('Could not save RSVP status locally:', err);
-  }
+function createGuestNameRow(){
+  const row=document.createElement('div');
+  row.className='guest-name-row';
+  row.innerHTML=`<span class="guest-name-icon" aria-hidden="true">♡</span><input type="text" class="guest-name-input" autocomplete="name" placeholder="Full name" required><button type="button" class="remove-guest-name-btn" aria-label="Remove this name">×</button>`;
+  row.querySelector('.remove-guest-name-btn').addEventListener('click',()=>row.remove());
+  return row;
 }
+function getGuestNames(){return [...document.querySelectorAll('.guest-name-input')].map(i=>i.value.trim()).filter(Boolean);}
 
-function showFormReminder(){
-  if (!formReminderPopup) return;
-  formReminderPopup.classList.add('show');
-  formReminderPopup.setAttribute('aria-hidden', 'false');
-  if (formReminderClose) formReminderClose.focus();
-}
+addGuestNameBtn?.addEventListener('click',()=>{const row=createGuestNameRow();guestNamesList.appendChild(row);row.querySelector('input')?.focus();});
+formReminderClose?.addEventListener('click',hideFormReminder);
+formReminderPopup?.addEventListener('click',e=>{if(e.target===formReminderPopup)hideFormReminder();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&formReminderPopup?.classList.contains('show'))hideFormReminder();});
 
-function hideFormReminder(){
-  if (!formReminderPopup) return;
-  formReminderPopup.classList.remove('show');
-  formReminderPopup.setAttribute('aria-hidden', 'true');
-}
-
-if (formReminderClose) {
-  formReminderClose.addEventListener('click', hideFormReminder);
-}
-if (formReminderPopup) {
-  formReminderPopup.addEventListener('click', (e) => {
-    if (e.target === formReminderPopup) hideFormReminder();
-  });
-}
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && formReminderPopup?.classList.contains('show')) {
-    hideFormReminder();
-  }
-});
-
-if (overlayForm) {
+if(overlayForm){
   document.body.classList.add('invitation-locked');
-
-  const savedRsvp = getSavedRsvp();
-  if (savedRsvp?.submitted === true) {
-    rsvpCompleted = true;
-    overlayForm.style.display = 'none';
-
-    const savedName = savedRsvp.name || '';
-    const savedAttend = savedRsvp.attending || '';
-    overlaySuccessMsg.textContent = savedAttend === 'Yes'
-      ? `RSVP already submitted for ${savedName || 'this invitation'}. We can’t wait to celebrate with you. 🤍`
-      : `RSVP already submitted for ${savedName || 'this invitation'}. Thank you for letting us know. 🤍`;
+  const savedRsvp=getSavedRsvp();
+  if(savedRsvp?.submitted===true){
+    rsvpCompleted=true;
+    overlayForm.style.display='none';
+    const savedNames=Array.isArray(savedRsvp.names)?savedRsvp.names:(savedRsvp.name?[savedRsvp.name]:[]);
+    const savedAttend=savedRsvp.attending||'';
+    const namesText=savedNames.join(', ');
+    overlaySuccessMsg.textContent=savedAttend==='Yes'?`RSVP already submitted for ${namesText||'this invitation'}. We can’t wait to celebrate with you. 🤍`:`RSVP already submitted for ${namesText||'this invitation'}. Thank you for letting us know. 🤍`;
     overlaySuccess.classList.add('show');
   }
 
-  overlayChoices.forEach(button => {
-    button.addEventListener('click', () => {
-      overlayChoices.forEach(btn => {
-        btn.classList.remove('selected');
-        btn.setAttribute('aria-pressed', 'false');
-      });
+  overlayChoices.forEach(button=>button.addEventListener('click',()=>{
+    overlayChoices.forEach(btn=>{btn.classList.remove('selected');btn.setAttribute('aria-pressed','false');});
+    button.classList.add('selected');button.setAttribute('aria-pressed','true');overlayAttendingValue=button.dataset.value;
+  }));
 
-      button.classList.add('selected');
-      button.setAttribute('aria-pressed', 'true');
-      overlayAttendingValue = button.dataset.value;
-
-      const nameLabel = document.querySelector('label[for="overlayGuestName"]');
-      if (nameLabel) {
-        nameLabel.textContent = overlayAttendingValue === 'Yes'
-          ? 'Full Name / Name(s) Attending'
-          : 'Full Name';
-      }
-
-      overlayName.placeholder = overlayAttendingValue === 'Yes'
-        ? 'Example: Juan Dela Cruz, Maria Dela Cruz'
-        : 'Your full name';
-    });
-  });
-
-  overlayForm.addEventListener('submit', function(e){
+  overlayForm.addEventListener('submit',function(e){
     e.preventDefault();
+    if(!overlayAttendingValue){showToast('Please select YES or NO.');return;}
+    const allInputs=[...document.querySelectorAll('.guest-name-input')];
+    if(allInputs.some(input=>!input.value.trim())){showToast('Please complete or remove each added name field.');allInputs.find(input=>!input.value.trim())?.focus();return;}
+    const names=getGuestNames();
+    if(!names.length){showToast('Please enter at least one full name.');allInputs[0]?.focus();return;}
 
-    if (!overlayAttendingValue) {
-      showToast('Please select YES or NO.');
-      return;
-    }
+    overlayRsvpSubmit.disabled=true;
+    overlayRsvpSubmit.textContent=names.length>1?`Submitting ${names.length} responses...`:'Submitting...';
 
-    const names = overlayName.value.trim();
-    if (!names) {
-      showToast(overlayAttendingValue === 'Yes'
-        ? 'Please enter the full name or name(s) attending.'
-        : 'Please enter your full name.');
-      overlayName.focus();
-      return;
-    }
+    names.forEach((name,index)=>{setTimeout(()=>{submitToGoogleForm({[ENTRY_NAME]:name,[ENTRY_ATTENDING]:overlayAttendingValue});},index*300);});
 
-    overlayRsvpSubmit.disabled = true;
-    overlayRsvpSubmit.textContent = 'Submitting...';
-
-    submitToGoogleForm({
-      [ENTRY_NAME]: names,
-      [ENTRY_ATTENDING]: overlayAttendingValue
-    });
-
-    rsvpCompleted = true;
-    saveRsvpLocally({
-      submitted: true,
-      name: names,
-      attending: overlayAttendingValue,
-      submittedAt: new Date().toISOString()
-    });
-
-    overlayForm.style.display = 'none';
-    overlaySuccessMsg.textContent = overlayAttendingValue === 'Yes'
-      ? `Thank you, ${names}! Your attendance has been confirmed. We can’t wait to celebrate with you. 🤍`
-      : `Thank you for letting us know, ${names}. You’ll be missed. 🤍`;
+    rsvpCompleted=true;
+    saveRsvpLocally({submitted:true,names,attending:overlayAttendingValue,submittedAt:new Date().toISOString()});
+    overlayForm.style.display='none';
+    const namesText=names.join(', ');
+    overlaySuccessMsg.textContent=overlayAttendingValue==='Yes'?`Thank you! RSVP submitted separately for ${namesText}. We can’t wait to celebrate with you. 🤍`:`Thank you for letting us know. RSVP submitted separately for ${namesText}. 🤍`;
     overlaySuccess.classList.add('show');
   });
 }
