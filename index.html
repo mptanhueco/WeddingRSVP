@@ -641,7 +641,7 @@
   align-items: center;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-  z-index: 9999;
+  z-index: 100050;
   transition: all 0.3s ease;
 }
 
@@ -1063,7 +1063,7 @@ body.invitation-locked{
   align-items: center;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-  z-index: 9999;
+  z-index: 100050;
   transition: all 0.3s ease;
 }
 
@@ -1077,6 +1077,110 @@ body.invitation-locked{
   width: 22px;
   height: 22px;
   fill: currentColor;
+}
+
+
+/* ---------- compact RSVP reminder popup ---------- */
+.form-reminder-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:100200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(54,20,31,.46);
+  backdrop-filter:blur(4px);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .22s ease, visibility .22s ease;
+}
+.form-reminder-backdrop.show{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+.form-reminder-card{
+  width:min(360px,100%);
+  padding:28px 24px;
+  border-radius:22px;
+  background:#fff9f6;
+  border:1px solid rgba(103,42,66,.22);
+  box-shadow:0 24px 70px rgba(58,20,34,.28);
+  text-align:center;
+  transform:translateY(12px) scale(.98);
+  transition:transform .22s ease;
+}
+.form-reminder-backdrop.show .form-reminder-card{transform:none;}
+.form-reminder-heart{font-size:2rem;color:#68142c;line-height:1;}
+.form-reminder-card h3{font-size:1.7rem;margin:8px 0 7px;color:#5b071c;}
+.form-reminder-card p{font-size:.92rem;color:#654651;margin-bottom:18px;}
+.form-reminder-close{
+  width:100%;
+  padding:12px 18px;
+  border:0;
+  border-radius:999px;
+  background:#68142c;
+  color:#fff;
+  font-family:'Jost',sans-serif;
+  font-size:.78rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+
+/* One working music control only. Hidden until invitation opens. */
+.music-btn{
+  z-index:100050 !important;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.music-btn.visible{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+
+/* Compact mobile confirmation screen to reduce scrolling */
+@media(max-width:700px){
+  .invitation-overlay{padding:8px;align-items:flex-start;}
+  .final-rsvp-card{width:100%;min-height:auto;margin:6px auto;border-radius:18px;padding:19px 14px 22px;}
+  .final-rsvp-card::before{inset:6px;border-radius:13px;}
+  .pp-mark{font-size:2.45rem;gap:11px;}
+  .pp-heart{transform:translateY(3px);}
+  .final-names{margin-top:9px;font-size:.78rem;letter-spacing:.26em;}
+  .final-date{font-size:.64rem;letter-spacing:.22em;}
+  .final-divider{margin:12px auto 10px;gap:10px;}
+  .final-divider span{width:48px;}
+  .final-title{font-size:2.55rem;line-height:.78;margin:10px 0 13px;}
+  .final-intro{font-size:.88rem;line-height:1.34;margin-bottom:12px;max-width:95%;}
+  .confirmation-notice{display:block;margin:10px 0 11px;}
+  .notice-item{display:grid;grid-template-columns:1fr;gap:2px;padding:7px 10px;margin-bottom:5px;border-radius:10px;}
+  .notice-icon{display:none;}
+  .notice-item h3{font-size:.84rem;margin:0;line-height:1.05;}
+  .notice-item p{font-size:.76rem;line-height:1.18;margin:1px 0 0;}
+  .overlay-rsvp-form{margin-top:10px;padding:12px;border-radius:15px;}
+  .rsvp-question{font-size:1.05rem;margin-bottom:8px;}
+  .overlay-attendance{gap:7px;margin-bottom:10px;}
+  .overlay-choice{padding:8px 6px;border-radius:11px;}
+  .choice-main{font-size:1.05rem;line-height:1;}
+  .choice-sub{font-size:.54rem;margin-top:2px;}
+  .overlay-field label{font-size:.61rem;margin-bottom:4px;letter-spacing:.10em;}
+  .overlay-field input{padding:9px 10px;border-radius:9px;font-size:.86rem;}
+  .confirmation-submit{margin-top:10px;padding:10px 16px;font-size:.68rem;}
+  .overlay-form-note{font-size:.61rem;margin-top:7px;}
+  .overlay-rsvp-success{margin-top:10px;padding:14px;border-radius:14px;}
+  .success-heart{font-size:1.45rem;}
+  .overlay-rsvp-success h3{font-size:1.35rem;margin:2px 0;}
+  .overlay-rsvp-success p{font-size:.9rem;line-height:1.25;}
+  .open-btn{margin-top:11px;padding:11px 20px;font-size:1rem;}
+}
+@media(max-width:390px){
+  .final-title{font-size:2.25rem;}
+  .final-intro{font-size:.82rem;}
+  .notice-item p{font-size:.72rem;}
 }
 </style>
 
@@ -1189,11 +1293,21 @@ body.invitation-locked{
       <p id="overlayRsvpSuccessMsg">Your confirmation has been received.</p>
     </div>
 
-    <!-- Keep Open Invitation at the bottom. It unlocks only after RSVP submission. -->
-    <button id="openInvitationBtn" class="open-btn" disabled>
+    <!-- Keep Open Invitation at the bottom. If RSVP is incomplete, a reminder popup is shown. -->
+    <button id="openInvitationBtn" class="open-btn">
       Open Invitation
     </button>
 
+  </div>
+</div>
+
+<!-- RSVP Reminder Popup -->
+<div id="formReminderPopup" class="form-reminder-backdrop" aria-hidden="true">
+  <div class="form-reminder-card" role="dialog" aria-modal="true" aria-labelledby="formReminderTitle">
+    <div class="form-reminder-heart">♡</div>
+    <h3 id="formReminderTitle">Please fill out the form</h3>
+    <p>Please submit your final RSVP before opening the invitation.</p>
+    <button type="button" id="formReminderClose" class="form-reminder-close">Okay</button>
   </div>
 </div>
 
@@ -1216,7 +1330,7 @@ body.invitation-locked{
     <a href="#details">Details</a>
     <a href="#dresscode">Dress Code</a>
     <a href="#location">Location</a>
-    <a href="#rsvp">RSVP</a>
+    <a href="#rsvp">Guest List</a>
     <a href="#gallery">Gallery</a>
   </nav>
   <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
@@ -1230,7 +1344,7 @@ body.invitation-locked{
   <a href="#details">Details</a>
   <a href="#dresscode">Dress Code</a>
   <a href="#location">Location</a>
-  <a href="#rsvp">RSVP</a>
+  <a href="#rsvp">Guest List</a>
   <a href="#gallery">Gallery</a>
 </div>
 
@@ -1569,45 +1683,16 @@ body.invitation-locked{
 <section id="rsvp">
   <div class="container">
     <div style="text-align:center;" class="reveal">
-      <p class="eyebrow" style="color:#dcb4c4">Kindly reply</p>
-      <h2 style="font-size:clamp(2rem,4vw,2.8rem); margin-top:10px; color:#dddadb;">A Seat Is Reserved For You</h2>
+      <p class="eyebrow" style="color:#dcb4c4">Celebrating Together</p>
+      <h2 style="font-size:clamp(2rem,4vw,2.8rem); margin-top:10px; color:#dddadb;">Our Guest List</h2>
       <div class="divider">♡</div>
-      <p style="max-width:480px; margin:0 auto; font-size:0.95rem; opacity:.8; color: #dddadb;">Let us know if you'll be dancing the night away with us.</p>
-    </div>
-
-    <div class="rsvp-card reveal reveal-delay-1">
-      <form id="rsvpFormEl">
-        <p class="eyebrow" style="text-align:left;">Will you be joining us?</p>
-        <div class="toggle-group">
-          <button type="button" class="toggle-pill" data-value="Yes">Joyfully Yes<span class="sub">I'll be there</span></button>
-          <button type="button" class="toggle-pill no" data-value="No">Regretfully No<span class="sub">Can't make it</span></button>
-        </div>
-
-        <div class="field">
-          <label for="guestName">Your Name</label>
-          <input type="text" id="guestName" name="guestName" placeholder="Full name" required>
-        </div>
-
-        <div class="field">
-          <label for="guestMsg">Message for the couple <span style="text-transform:none; letter-spacing:0; opacity:.6;">(optional)</span></label>
-          <textarea id="guestMsg" name="guestMsg" placeholder="Leave a wish, well wishes, or a song request..."></textarea>
-        </div>
-
-        <button type="submit" class="btn filled rsvp-submit" id="rsvpSubmitBtn">Send RSVP</button>
-        <p class="rsvp-note">Your response is saved directly to Paolo &amp; Pamela's guest list.</p>
-      </form>
-
-      <div class="rsvp-success" id="rsvpSuccess">
-        <span class="heart">♡</span>
-        <h3 style="font-size:1.6rem;">Thank you!</h3>
-        <p style="margin-top:10px; opacity:.8;" id="rsvpSuccessMsg">Your RSVP has been received. We can't wait to celebrate with you.</p>
-      </div>
+      <p style="max-width:520px; margin:0 auto; font-size:0.95rem; opacity:.8; color:#dddadb;">We’re grateful to celebrate this special day with the people closest to our hearts.</p>
     </div>
 
     <!-- Guest List / Well Wishes Section Header -->
     <div class="guest-list-header reveal" style="text-align: center; margin-top: 60px;">
       <p class="eyebrow" style="color:#dcb4c4">Celebration &amp; Wishes</p>
-      <h3 style="font-size: clamp(1.6rem, 3vw, 2.2rem); margin-top: 5px; color:#dddadb;">Our Guest List &amp; Messages</h3>
+      <h3 style="font-size: clamp(1.6rem, 3vw, 2.2rem); margin-top: 5px; color:#dddadb;">Our Guest List</h3>
       <div class="divider">♡</div>
     </div>
 
@@ -1685,7 +1770,6 @@ body.invitation-locked{
 <div class="sticky-count hidden" id="stickyCount">
   <span class="sc-label">Almost there...</span>
   <div class="sc-units" id="stickyUnits"></div>
-  <a href="#rsvp" class="sc-rsvp-btn">RSVP</a>
   <button class="sc-toggle" id="scToggle" aria-label="Hide countdown">✕</button>
 </div>
 <button class="sc-reopen" id="scReopen">Show Countdown</button>
@@ -1697,18 +1781,6 @@ body.invitation-locked{
 </div>
 
 <div class="toast" id="toast"></div>
-
-<!-- Floating Mute / Unmute Button -->
-<button id="musicToggleBtn" class="music-btn" aria-label="Toggle Music">
-  <!-- Speaker Icon (Visible when playing) -->
-  <svg id="iconPlaying" class="music-icon" viewBox="0 0 24 24">
-    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-  </svg>
-  <!-- Muted Icon (Hidden by default) -->
-  <svg id="iconMuted" class="music-icon" viewBox="0 0 24 24" style="display: none;">
-    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-  </svg>
-</button>
 
 <script>
 /* ================= CONFIG ================= */
@@ -1724,10 +1796,9 @@ const WEDDING_DATE = new Date("2026-10-19T15:00:00+08:00");
 // 3. To find each entry ID: open the live form, fill it out, click Submit once, then check
 //    the browser's network tab / the resulting URL for entry.123456789=value pairs.
 
-const GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdl_i8jbYl1BCPNvyUIYPJ2Ow4sRxz12EkLL4k011KC2hhsog/formResponse';
-const ENTRY_NAME = 'entry.141717649';
-const ENTRY_ATTENDING = 'entry.993851931';
-const ENTRY_MESSAGE = 'entry.1118148878';
+const GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLScXRFverg7sLagoZVIDzKRUbk7TPnLVz6J12BT9KaRX2hG7Bw/formResponse';
+const ENTRY_NAME = 'entry.1262244481';
+const ENTRY_ATTENDING = 'entry.7157089';
 
 /* ================= NAV ================= */
 const siteNav = document.getElementById('siteNav');
@@ -1885,33 +1956,6 @@ document.getElementById('addCalendarBtn').addEventListener('click', () => {
   window.open(url, '_blank');
 });
 
-/* ================= RSVP FORM ================= */
-let attendingValue = null;
-document.querySelectorAll('.toggle-pill').forEach(pill => {
-  pill.addEventListener('click', () => {
-    document.querySelectorAll('.toggle-pill').forEach(p => p.classList.remove('selected'));
-    pill.classList.add('selected');
-    attendingValue = pill.dataset.value;
-  });
-});
-
-document.getElementById('rsvpFormEl').addEventListener('submit', function(e){
-  e.preventDefault();
-  if (!attendingValue){ showToast('Please choose Yes or No'); return; }
-  const name = document.getElementById('guestName').value.trim();
-  const msg = document.getElementById('guestMsg').value.trim();
-  if (!name){ showToast('Please enter your name'); return; }
-
-  // Submit to Google Forms silently via a hidden iframe (no CORS issues, no redirect).
-  submitToGoogleForm({ [ENTRY_NAME]: name, [ENTRY_ATTENDING]: attendingValue, [ENTRY_MESSAGE]: msg });
-
-  document.getElementById('rsvpFormEl').classList.add('hide');
-  document.getElementById('rsvpSuccessMsg').textContent = attendingValue === 'Yes'
-    ? `Thank you, ${name}! We can't wait to celebrate with you.`
-    : `Thank you for letting us know, ${name}. You'll be missed!`;
-  document.getElementById('rsvpSuccess').classList.add('show');
-});
-
 function submitToGoogleForm(fields){
   // Check if the user forgot to configure the form URL placeholder
   if (GOOGLE_FORM_ACTION.includes('PASTE_YOUR_FORM_ID')){
@@ -1941,7 +1985,10 @@ function submitToGoogleForm(fields){
 }
 
 /* ================= REQUIRED POPUP RSVP ================= */
+const RSVP_STORAGE_KEY = 'pamelaPaoloFinalRsvp2026';
 let overlayAttendingValue = null;
+let rsvpCompleted = false;
+
 const overlayChoices = document.querySelectorAll('.overlay-choice');
 const overlayForm = document.getElementById('overlayRsvpForm');
 const overlayName = document.getElementById('overlayGuestName');
@@ -1949,9 +1996,67 @@ const overlaySuccess = document.getElementById('overlayRsvpSuccess');
 const overlaySuccessMsg = document.getElementById('overlayRsvpSuccessMsg');
 const overlayRsvpSubmit = document.getElementById('overlayRsvpSubmit');
 const overlayOpenInvitationBtn = document.getElementById('openInvitationBtn');
+const formReminderPopup = document.getElementById('formReminderPopup');
+const formReminderClose = document.getElementById('formReminderClose');
+
+function getSavedRsvp(){
+  try {
+    return JSON.parse(localStorage.getItem(RSVP_STORAGE_KEY) || 'null');
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveRsvpLocally(data){
+  try {
+    localStorage.setItem(RSVP_STORAGE_KEY, JSON.stringify(data));
+  } catch (err) {
+    console.warn('Could not save RSVP status locally:', err);
+  }
+}
+
+function showFormReminder(){
+  if (!formReminderPopup) return;
+  formReminderPopup.classList.add('show');
+  formReminderPopup.setAttribute('aria-hidden', 'false');
+  if (formReminderClose) formReminderClose.focus();
+}
+
+function hideFormReminder(){
+  if (!formReminderPopup) return;
+  formReminderPopup.classList.remove('show');
+  formReminderPopup.setAttribute('aria-hidden', 'true');
+}
+
+if (formReminderClose) {
+  formReminderClose.addEventListener('click', hideFormReminder);
+}
+if (formReminderPopup) {
+  formReminderPopup.addEventListener('click', (e) => {
+    if (e.target === formReminderPopup) hideFormReminder();
+  });
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && formReminderPopup?.classList.contains('show')) {
+    hideFormReminder();
+  }
+});
 
 if (overlayForm) {
   document.body.classList.add('invitation-locked');
+
+  const savedRsvp = getSavedRsvp();
+  if (savedRsvp?.submitted === true) {
+    rsvpCompleted = true;
+    overlayForm.style.display = 'none';
+
+    const savedName = savedRsvp.name || '';
+    const savedAttend = savedRsvp.attending || '';
+    overlaySuccessMsg.textContent = savedAttend === 'Yes'
+      ? `RSVP already submitted for ${savedName || 'this invitation'}. We can’t wait to celebrate with you. 🤍`
+      : `RSVP already submitted for ${savedName || 'this invitation'}. Thank you for letting us know. 🤍`;
+    overlaySuccess.classList.add('show');
+  }
 
   overlayChoices.forEach(button => {
     button.addEventListener('click', () => {
@@ -1999,8 +2104,15 @@ if (overlayForm) {
 
     submitToGoogleForm({
       [ENTRY_NAME]: names,
-      [ENTRY_ATTENDING]: overlayAttendingValue,
-      [ENTRY_MESSAGE]: ''
+      [ENTRY_ATTENDING]: overlayAttendingValue
+    });
+
+    rsvpCompleted = true;
+    saveRsvpLocally({
+      submitted: true,
+      name: names,
+      attending: overlayAttendingValue,
+      submittedAt: new Date().toISOString()
     });
 
     overlayForm.style.display = 'none';
@@ -2008,9 +2120,6 @@ if (overlayForm) {
       ? `Thank you, ${names}! Your attendance has been confirmed. We can’t wait to celebrate with you. 🤍`
       : `Thank you for letting us know, ${names}. You’ll be missed. 🤍`;
     overlaySuccess.classList.add('show');
-
-    // The invitation can only be opened after this required confirmation is submitted.
-    overlayOpenInvitationBtn.disabled = false;
   });
 }
 
@@ -2104,10 +2213,10 @@ document.querySelectorAll('#story .polaroid img').forEach(img => {
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Load background audio
   const bgMusic = new Audio('https://mptanhueco.github.io/WeddingInvitation/Assets/bg-music.mp3');
   bgMusic.loop = true;
-  bgMusic.volume = 0.5; // Ambient 50% volume
+  bgMusic.volume = 0.5;
+  bgMusic.preload = 'auto';
 
   const overlay = document.getElementById('invitationOverlay');
   const openBtn = document.getElementById('openInvitationBtn');
@@ -2115,47 +2224,61 @@ document.addEventListener('DOMContentLoaded', () => {
   const iconPlaying = document.getElementById('iconPlaying');
   const iconMuted = document.getElementById('iconMuted');
 
-  // Toggle speaker visual icons
-  function updateIcons(isPlaying) {
-    if (isPlaying) {
-      iconPlaying.style.display = 'block';
-      iconMuted.style.display = 'none';
-    } else {
-      iconPlaying.style.display = 'none';
-      iconMuted.style.display = 'block';
+  function updateMusicUI(){
+    const isPlaying = !bgMusic.paused;
+    if (iconPlaying) iconPlaying.style.display = isPlaying ? 'block' : 'none';
+    if (iconMuted) iconMuted.style.display = isPlaying ? 'none' : 'block';
+    if (muteBtn) {
+      muteBtn.setAttribute('aria-label', isPlaying ? 'Mute music' : 'Play music');
+      muteBtn.classList.toggle('is-playing', isPlaying);
     }
   }
 
-  // Handle "Open Invitation" Button Click
-  openBtn.addEventListener('click', () => {
-    if (openBtn.disabled) return;
+  async function startWeddingMusic(){
+    try {
+      await bgMusic.play();
+    } catch (err) {
+      console.log('Audio playback failed:', err);
+    }
+    updateMusicUI();
+  }
 
-    // Smoothly fade out the overlay screen
-    overlay.classList.add('fade-out');
-    document.body.classList.remove('invitation-locked');
+  if (openBtn) {
+    openBtn.addEventListener('click', async () => {
+      if (!rsvpCompleted) {
+        showFormReminder();
+        return;
+      }
 
-    // Start background music playback
-    bgMusic.play().then(() => {
-      updateIcons(true);
-    }).catch(err => {
-      console.log("Audio playback failed:", err);
+      overlay?.classList.add('fade-out');
+      document.body.classList.remove('invitation-locked');
+
+      if (muteBtn) muteBtn.classList.add('visible');
+      await startWeddingMusic();
     });
-  });
+  }
 
-  // Handle Mute/Unmute Toggle Button
   if (muteBtn) {
-    muteBtn.addEventListener('click', (e) => {
+    updateMusicUI();
+    muteBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
       e.stopPropagation();
 
       if (bgMusic.paused) {
-        bgMusic.play();
-        updateIcons(true);
+        try {
+          await bgMusic.play();
+        } catch (err) {
+          console.log('Audio playback failed:', err);
+        }
       } else {
         bgMusic.pause();
-        updateIcons(false);
       }
+      updateMusicUI();
     });
   }
+
+  bgMusic.addEventListener('play', updateMusicUI);
+  bgMusic.addEventListener('pause', updateMusicUI);
 });
 </script>
 </body>
