@@ -657,74 +657,394 @@
   fill: currentColor;
 }
 
-/* Overlay Container (Full Screen) */
-.invitation-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background-color: #faf5f0; /* Soft wedding beige/cream color */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 99999;
-  transition: opacity 0.8s ease, visibility 0.8s ease;
-  padding: 20px;
-  box-sizing: border-box;
+/* ============================================================
+   FINAL CONFIRMATION / REQUIRED RSVP OVERLAY
+   ============================================================ */
+body.invitation-locked{
+  overflow:hidden;
 }
 
-/* Hide overlay state */
-.invitation-overlay.fade-out {
-  opacity: 0;
-  visibility: hidden;
+.invitation-overlay{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100dvh;
+  z-index:99999;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(121,25,50,.10), transparent 34%),
+    radial-gradient(circle at 100% 100%, rgba(121,25,50,.10), transparent 35%),
+    linear-gradient(180deg,#fae9e2 0%,#fbeee8 55%,#f8e3dc 100%);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:26px 16px 45px;
+  transition:opacity .8s ease, visibility .8s ease;
 }
 
-/* Overlay Card Content */
-.overlay-card {
-  text-align: center;
-  max-width: 480px;
-  padding: 40px 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border: 1px solid #ebdcd0;
+.invitation-overlay.fade-out{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
 }
 
-.overlay-sub {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #8c7365;
-  margin-bottom: 15px;
+.final-rsvp-card{
+  width:min(760px,100%);
+  margin:auto;
+  background:rgba(255,250,247,.98);
+  border:1px solid rgba(103,42,66,.28);
+  padding:clamp(30px,6vw,60px) clamp(20px,6vw,58px);
+  text-align:center;
+  box-shadow:0 25px 70px rgba(91,30,58,.15);
+  position:relative;
 }
 
-.overlay-title {
-  font-family: 'Georgia', serif;
-  font-size: 2.2rem;
-  color: #5c4739;
-  margin: 0 0 30px 0;
-  font-weight: normal;
+.final-rsvp-card::before{
+  content:"";
+  position:absolute;
+  inset:10px;
+  pointer-events:none;
+  border:1px solid rgba(103,42,66,.13);
 }
 
-/* Open Invitation Button */
-.open-btn {
-  padding: 14px 32px;
-  font-size: 0.95rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  background-color: #d4a373;
-  color: #ffffff;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(212, 163, 115, 0.4);
-  transition: all 0.3s ease;
+.final-monogram,
+.final-divider,
+.final-title,
+.final-intro,
+.confirmation-notice,
+.overlay-rsvp-form,
+.overlay-rsvp-success,
+.open-btn{
+  position:relative;
+  z-index:2;
 }
 
-.open-btn:hover {
-  background-color: #bc8a5f;
-  transform: translateY(-2px);
+.pp-mark{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:16px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3rem,10vw,5rem);
+  line-height:.8;
+  color:#641329;
+}
+
+.pp-heart{
+  font-size:.35em;
+  transform:translateY(7px);
+}
+
+.final-names{
+  margin-top:18px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(.95rem,3vw,1.2rem);
+  font-weight:600;
+  letter-spacing:.35em;
+  color:#641329;
+}
+
+.final-date{
+  margin-top:5px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:.82rem;
+  letter-spacing:.30em;
+  color:#8b5363;
+}
+
+.final-divider{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  margin:28px auto 22px;
+}
+
+.final-divider span{
+  width:80px;
+  height:1px;
+  background:#a9707e;
+}
+
+.final-divider b{
+  color:#7c1730;
+  font-size:.9rem;
+}
+
+.final-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3rem,11vw,6rem);
+  line-height:.75;
+  font-weight:500;
+  letter-spacing:-.04em;
+  color:#5b071c;
+  margin:20px 0 32px;
+}
+
+.final-intro{
+  max-width:620px;
+  margin:0 auto 32px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.05rem,3vw,1.32rem);
+  line-height:1.5;
+  font-style:italic;
+  color:#4c2c35;
+}
+
+.confirmation-notice{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin:30px 0;
+}
+
+.notice-item{
+  padding:25px 18px;
+  border:1px solid rgba(103,42,66,.27);
+  border-radius:24px;
+  background:#fff8f4;
+}
+
+.notice-icon{
+  width:72px;
+  height:72px;
+  margin:0 auto 16px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#efc8c9;
+  color:#68142c;
+}
+
+.notice-icon svg{
+  width:34px;
+  height:34px;
+  stroke:currentColor;
+}
+
+.notice-item h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.15rem;
+  line-height:1.05;
+  text-transform:uppercase;
+  color:#5b071c;
+  margin-bottom:12px;
+}
+
+.notice-item p{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1rem;
+  line-height:1.35;
+  font-style:italic;
+  color:#4c3038;
+}
+
+.overlay-rsvp-form{
+  margin-top:36px;
+  padding:30px;
+  border-radius:26px;
+  background:#f2cecb;
+}
+
+.rsvp-question{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.55rem;
+  font-weight:600;
+  color:#641329;
+  margin-bottom:18px;
+}
+
+.overlay-attendance{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:25px;
+}
+
+.overlay-choice{
+  border:1px solid rgba(103,42,66,.35);
+  border-radius:18px;
+  background:#fff9f6;
+  padding:17px 12px;
+  cursor:pointer;
+  color:#68142c;
+  font-family:'Jost',sans-serif;
+  transition:transform .2s ease, background .25s ease, color .25s ease, border-color .25s ease;
+}
+
+.overlay-choice:hover{
+  transform:translateY(-2px);
+}
+
+.overlay-choice.selected{
+  background:#671b34;
+  border-color:#671b34;
+  color:white;
+}
+
+.choice-main{
+  display:block;
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.45rem;
+  font-weight:600;
+}
+
+.choice-sub{
+  display:block;
+  margin-top:2px;
+  font-size:.65rem;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  opacity:.75;
+}
+
+.overlay-field{
+  text-align:left;
+}
+
+.overlay-field label{
+  display:block;
+  margin-bottom:8px;
+  font-size:.72rem;
+  font-weight:500;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#68142c;
+}
+
+.overlay-field input{
+  width:100%;
+  padding:15px 16px;
+  border:1px solid rgba(103,42,66,.30);
+  border-radius:12px;
+  background:#fffaf8;
+  color:#3a2430;
+  font-family:'Jost',sans-serif;
+  font-size:.95rem;
+}
+
+.overlay-field input:focus{
+  outline:none;
+  border-color:#671b34;
+  box-shadow:0 0 0 3px rgba(103,27,52,.09);
+}
+
+.confirmation-submit{
+  width:100%;
+  margin-top:22px;
+  padding:15px 25px;
+  border:0;
+  border-radius:999px;
+  background:#671b34;
+  color:#fff;
+  font-family:'Jost',sans-serif;
+  font-size:.78rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.25s ease;
+}
+
+.confirmation-submit:hover{
+  background:#832644;
+  transform:translateY(-2px);
+}
+
+.confirmation-submit:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.overlay-form-note{
+  font-size:.72rem;
+  margin-top:13px;
+  color:#77515d;
+}
+
+.overlay-rsvp-success{
+  display:none;
+  margin-top:34px;
+  padding:28px;
+  border-radius:22px;
+  background:#f2cecb;
+}
+
+.overlay-rsvp-success.show{
+  display:block;
+  animation:overlaySuccess .5s ease;
+}
+
+.success-heart{
+  font-size:2rem;
+  color:#68142c;
+}
+
+.overlay-rsvp-success h3{
+  font-size:1.8rem;
+  margin:5px 0;
+}
+
+.overlay-rsvp-success p{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;
+}
+
+.open-btn{
+  display:block;
+  width:min(340px,100%);
+  margin:30px auto 0;
+  padding:17px 32px;
+  border:none;
+  border-radius:999px;
+  background:#68142c;
+  color:white;
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.25rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(103,27,52,.22);
+  transition:.25s ease;
+}
+
+.open-btn:hover:not(:disabled){
+  background:#832644;
+  transform:translateY(-2px);
+}
+
+.open-btn:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+
+@keyframes overlaySuccess{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+@media(max-width:700px){
+  .invitation-overlay{padding:0;}
+  .final-rsvp-card{
+    width:100%;
+    min-height:100dvh;
+    border:0;
+    padding:35px 18px 45px;
+  }
+  .final-rsvp-card::before{inset:8px;}
+  .confirmation-notice{grid-template-columns:1fr;}
+  .notice-item{padding:21px 18px;}
+  .notice-icon{width:62px;height:62px;}
+  .overlay-rsvp-form{padding:23px 16px;}
+  .final-divider span{width:55px;}
+}
+
+@media(max-width:440px){
+  .overlay-attendance{grid-template-columns:1fr;}
 }
 
 /* Floating Mute Button (Bottom-Left) */
@@ -764,12 +1084,116 @@
 </head>
 <body>
 
-  <!-- Full-Screen Overlay Screen -->
+  <!-- ============ FINAL CONFIRMATION / REQUIRED RSVP OVERLAY ============ -->
 <div id="invitationOverlay" class="invitation-overlay">
-  <div class="overlay-card">
-    <p class="overlay-sub">You Are Cordially Invited To The Wedding Of</p>
-    <h1 class="overlay-title">Pamela &amp; Paolo</h1>
-    <button id="openInvitationBtn" class="open-btn">Open Invitation</button>
+  <div class="final-rsvp-card">
+
+    <div class="final-monogram">
+      <div class="pp-mark" aria-label="Pamela and Paolo">
+        <span>P</span>
+        <span class="pp-heart">♥</span>
+        <span>P</span>
+      </div>
+      <p class="final-names">PAMELA &amp; PAOLO</p>
+      <p class="final-date">OCTOBER 19, 2026</p>
+    </div>
+
+    <div class="final-divider" aria-hidden="true">
+      <span></span><b>♥</b><span></span>
+    </div>
+
+    <h1 class="final-title">FINAL<br>CONFIRMATION</h1>
+
+    <p class="final-intro">
+      Hi! 🤍 We’re doing our final confirmation for our wedding on
+      <strong>October 19, 2026.</strong> Kindly confirm if you’ll be attending and
+      please include the <strong>name/s of those who will be coming.</strong>
+      Our venue is already at maximum capacity, so we’re unable to accommodate
+      additional guests or plus-ones. Seats are reserved based on our guest list.
+      We hope you understand. 🤍
+    </p>
+
+    <div class="confirmation-notice">
+      <article class="notice-item">
+        <div class="notice-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+            <path d="M16 3v4M8 3v4M3 10h18"></path>
+          </svg>
+        </div>
+        <h3>Please Confirm Your Attendance</h3>
+        <p>Kindly let us know if you will be joining our celebration.</p>
+      </article>
+
+      <article class="notice-item">
+        <div class="notice-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="3"></circle>
+            <path d="M3.5 19v-1.5A4.5 4.5 0 0 1 8 13h2a4.5 4.5 0 0 1 4.5 4.5V19"></path>
+            <path d="M16 8h5M18.5 5.5v5"></path>
+          </svg>
+        </div>
+        <h3>No Plus One</h3>
+        <p>We’re unable to accommodate additional guests or plus-ones because the venue is already at maximum capacity.</p>
+      </article>
+
+      <article class="notice-item">
+        <div class="notice-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 4h10v8H7zM8 12v8M16 12v8M8 16h8"></path>
+          </svg>
+        </div>
+        <h3>Seats Are Reserved</h3>
+        <p>Seating is prepared and reserved based only on our guest list.</p>
+      </article>
+    </div>
+
+    <form id="overlayRsvpForm" class="overlay-rsvp-form">
+      <p class="rsvp-question">Will you be attending?</p>
+
+      <div class="overlay-attendance">
+        <button type="button" class="overlay-choice" data-value="Yes" aria-pressed="false">
+          <span class="choice-main">YES</span>
+          <span class="choice-sub">We’ll be there</span>
+        </button>
+
+        <button type="button" class="overlay-choice no" data-value="No" aria-pressed="false">
+          <span class="choice-main">NO</span>
+          <span class="choice-sub">Unable to attend</span>
+        </button>
+      </div>
+
+      <div class="overlay-field">
+        <label for="overlayGuestName">Full Name / Name(s) Attending</label>
+        <input
+          type="text"
+          id="overlayGuestName"
+          name="overlayGuestName"
+          autocomplete="name"
+          placeholder="Example: Juan Dela Cruz, Maria Dela Cruz"
+          required>
+      </div>
+
+      <button type="submit" id="overlayRsvpSubmit" class="confirmation-submit">
+        Submit Confirmation
+      </button>
+
+      <p class="overlay-form-note">
+        Reply format: YES — Name/s attending or NO — Unable to attend.
+      </p>
+    </form>
+
+    <div id="overlayRsvpSuccess" class="overlay-rsvp-success" aria-live="polite">
+      <div class="success-heart">♡</div>
+      <h3>Thank you!</h3>
+      <p id="overlayRsvpSuccessMsg">Your confirmation has been received.</p>
+    </div>
+
+    <!-- Keep Open Invitation at the bottom. It unlocks only after RSVP submission. -->
+    <button id="openInvitationBtn" class="open-btn" disabled>
+      Open Invitation
+    </button>
+
   </div>
 </div>
 
@@ -1516,6 +1940,80 @@ function submitToGoogleForm(fields){
   form.remove();
 }
 
+/* ================= REQUIRED POPUP RSVP ================= */
+let overlayAttendingValue = null;
+const overlayChoices = document.querySelectorAll('.overlay-choice');
+const overlayForm = document.getElementById('overlayRsvpForm');
+const overlayName = document.getElementById('overlayGuestName');
+const overlaySuccess = document.getElementById('overlayRsvpSuccess');
+const overlaySuccessMsg = document.getElementById('overlayRsvpSuccessMsg');
+const overlayRsvpSubmit = document.getElementById('overlayRsvpSubmit');
+const overlayOpenInvitationBtn = document.getElementById('openInvitationBtn');
+
+if (overlayForm) {
+  document.body.classList.add('invitation-locked');
+
+  overlayChoices.forEach(button => {
+    button.addEventListener('click', () => {
+      overlayChoices.forEach(btn => {
+        btn.classList.remove('selected');
+        btn.setAttribute('aria-pressed', 'false');
+      });
+
+      button.classList.add('selected');
+      button.setAttribute('aria-pressed', 'true');
+      overlayAttendingValue = button.dataset.value;
+
+      const nameLabel = document.querySelector('label[for="overlayGuestName"]');
+      if (nameLabel) {
+        nameLabel.textContent = overlayAttendingValue === 'Yes'
+          ? 'Full Name / Name(s) Attending'
+          : 'Full Name';
+      }
+
+      overlayName.placeholder = overlayAttendingValue === 'Yes'
+        ? 'Example: Juan Dela Cruz, Maria Dela Cruz'
+        : 'Your full name';
+    });
+  });
+
+  overlayForm.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    if (!overlayAttendingValue) {
+      showToast('Please select YES or NO.');
+      return;
+    }
+
+    const names = overlayName.value.trim();
+    if (!names) {
+      showToast(overlayAttendingValue === 'Yes'
+        ? 'Please enter the full name or name(s) attending.'
+        : 'Please enter your full name.');
+      overlayName.focus();
+      return;
+    }
+
+    overlayRsvpSubmit.disabled = true;
+    overlayRsvpSubmit.textContent = 'Submitting...';
+
+    submitToGoogleForm({
+      [ENTRY_NAME]: names,
+      [ENTRY_ATTENDING]: overlayAttendingValue,
+      [ENTRY_MESSAGE]: ''
+    });
+
+    overlayForm.style.display = 'none';
+    overlaySuccessMsg.textContent = overlayAttendingValue === 'Yes'
+      ? `Thank you, ${names}! Your attendance has been confirmed. We can’t wait to celebrate with you. 🤍`
+      : `Thank you for letting us know, ${names}. You’ll be missed. 🤍`;
+    overlaySuccess.classList.add('show');
+
+    // The invitation can only be opened after this required confirmation is submitted.
+    overlayOpenInvitationBtn.disabled = false;
+  });
+}
+
 /* ================= GALLERY LIGHTBOX ================= */
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
@@ -1630,8 +2128,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle "Open Invitation" Button Click
   openBtn.addEventListener('click', () => {
+    if (openBtn.disabled) return;
+
     // Smoothly fade out the overlay screen
     overlay.classList.add('fade-out');
+    document.body.classList.remove('invitation-locked');
 
     // Start background music playback
     bgMusic.play().then(() => {
